@@ -1,0 +1,20 @@
+Import('RTT_ROOT')
+Import('rtconfig')
+from building import *
+
+#cwd = os.path.join(str(Dir('#')), 'applications')
+cwd = GetCurrentDir()
+src = Split("""
+at_para.c
+customlib.c
+para_ncom.c
+paralib.c
+para_ncom.h
+""")
+
+
+#CPPPATH = [cwd, str(Dir('#'))]
+CPPPATH = [cwd]
+group = DefineGroup('ATpara', src, depend = ['RT_USING_ATpara'], CPPPATH = CPPPATH)
+
+Return('group')

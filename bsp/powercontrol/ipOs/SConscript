@@ -1,0 +1,19 @@
+Import('RTT_ROOT')
+Import('rtconfig')
+from building import *
+
+#cwd = os.path.join(str(Dir('#')), 'applications')
+cwd = GetCurrentDir()
+src = Split("""
+netbuf.c
+netpage.c
+uart_nb.c
+config.h
+""")
+
+
+#CPPPATH = [cwd, str(Dir('#'))]
+CPPPATH = [cwd]
+group = DefineGroup('ipOs', src, depend = ['RT_USING_ipOs'], CPPPATH = CPPPATH)
+
+Return('group')
