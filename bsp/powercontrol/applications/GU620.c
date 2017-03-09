@@ -278,7 +278,7 @@ static int gprsDail(void)
 	}
 	else LOG(DEBUG,("FIND GU620_DEVICE\r\n"));
 	
-	err = sendAtCmdWaitResp("ATE0\r",RT_TICK_PER_SECOND, "OK",5);     //ÔÊÐí×¢²á
+	err = sendAtCmdWaitResp("ATE0\r",RT_TICK_PER_SECOND, "OK",5);     //¹Ø±Õ»ØÏÔ
 	if (err != GU620_OK)
 		return err;	
 	
