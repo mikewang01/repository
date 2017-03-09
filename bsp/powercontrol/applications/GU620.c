@@ -266,9 +266,9 @@ static int gprsDail(void)
 	if(err != GU620_OK)
 		return err;
 	
-	err = sendAtCmdWaitResp("AT+GPSPWR=0\r",RT_TICK_PER_SECOND*2, "OK",5);     //关闭GPS电源
-	if (err != GU620_OK)
-		return err;	
+//	err = sendAtCmdWaitResp("AT+GPSPWR=0\r",RT_TICK_PER_SECOND*2, "OK",5);     //关闭GPS电源
+//	if (err != GU620_OK)
+//		return err;	
 	
 	err = sendAtCmdWaitResp("AT\r",RT_TICK_PER_SECOND>>1, "OK",10);
 	if (err != GU620_OK)
