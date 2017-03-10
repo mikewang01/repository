@@ -381,7 +381,7 @@ void GU620_GPSUPLOAD()
 //			}
 
 //			rt_enter_critical();    //进入临界区
-//			rt_thread_delay(RT_TICK_PER_SECOND*1);
+			rt_thread_delay(RT_TICK_PER_SECOND*1);
 			rt_device_read(GU620_UART2,0,GPS_buf,sizeof(GPS_buf)-1);    //读取串口2数据
 //			rt_exit_critical();     //退出临界区
 			
