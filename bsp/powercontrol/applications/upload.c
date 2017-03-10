@@ -8,6 +8,7 @@ rt_device_t GPS_dev;
 rt_nmead_t gps;  //经纬度结构体
 rt_nmea_msg_t gpsx;																	//GPS信息
 
+rt_device_t GU620_UART2;
 extern rt_device_t GU620_dev;
 extern int gps_flag;
 int TCP_reconnet_flag = 0;
@@ -113,9 +114,30 @@ int GPS_Init(void)
 	if(err != GU620_OK)
 		return err;
 	
-	err = sendAtCmdWaitResp("AT+GPSUART=1,0\r",RT_TICK_PER_SECOND, "OK",10);     //串口1输出
+//	err = sendAtCmdWaitResp("AT+GPSCONT=5,1\r",RT_TICK_PER_SECOND, "OK",10);     //
+//	if(err != GU620_OK)
+//		return err;
+	
+	err = sendAtCmdWaitResp("AT+GPSUART=1,1\r",RT_TICK_PER_SECOND, "OK",10);     //串口2输出
 	if(err != GU620_OK)
 		return err;
+	
+	err = sendAtCmdWaitResp("AT+GPSIPR=115200\r",RT_TICK_PER_SECOND, "OK",10);     //GPS串口波特率 115200
+	if(err != GU620_OK)
+		return err;
+	
+	GU620_UART2 = rt_device_find("uart2");    //finded uart2
+	
+	if(GU620_UART2 != RT_NULL)
+	{	
+		LOG(DEBUG,("Finded GU620_uart2 \r\n"));
+	}
+	else
+		LOG(DEBUG,("NOT Find GU620_uart2 \r\n"));
+	
+	rt_device_open(GU620_UART2,RT_DEVICE_OFLAG_RDWR|RT_DEVICE_FLAG_INT_RX);   //open uart2
+	
+	
 #endif
 //	err = sendAtCmdWaitResp("AT+ENBR=0,3,\"supl.nokia.com\",7275\r",RT_TICK_PER_SECOND*2, "OK",10);     //
 //	if(err != GU620_OK)
@@ -349,12 +371,21 @@ void GU620_GPSUPLOAD()
 			float tp;
 			
 	
-			rt_device_read(GU620_dev,0,otherbuf,sizeof(otherbuf)-1);
-
-			rt_thread_delay(RT_TICK_PER_SECOND);
+//			rt_device_read(GU620_UART2,0,otherbuf,sizeof(otherbuf)-1);    //清空一次串口2
 			
-			rt_device_read(GU620_dev,0,GPS_buf,sizeof(GPS_buf)-1);
-			rt_thread_delay(RT_TICK_PER_SECOND);
+//			if(rt_sem_take(sem,1000) == RT_EOK)
+//			{
+//					rt_thread_delay(RT_TICK_PER_SECOND);	
+//					rt_device_read(GU620_dev,0,GPS_buf,sizeof(GPS_buf)-1);
+//					rt_sem_release(sem);
+//			}
+
+//			rt_enter_critical();    //进入临界区
+//			rt_thread_delay(RT_TICK_PER_SECOND*1);
+			rt_device_read(GU620_UART2,0,GPS_buf,sizeof(GPS_buf)-1);    //读取串口2数据
+//			rt_exit_critical();     //退出临界区
+			
+//			rt_thread_delay(RT_TICK_PER_SECOND);
 			LOG(UPLOAD_DEBUGE,("GPS_buf :\r\n%s\r\n-------------------------------------------------\r\n",(char*)GPS_buf));
 			
 			
@@ -374,7 +405,7 @@ void GU620_GPSUPLOAD()
 			NMEA_GPRMC_Analysis(&gpsx,(rt_uint8_t *)GPS_buf);					//GPRMC解析
 			NMEA_GPGGA_Analysis(&gpsx,(rt_uint8_t *)GPS_buf);					//GPGGA解析
 //			LBS_Analysis(&gpsx,(rt_uint8_t *)LBS_buf);   							//基站定位解析
-      //handle data
+//数据处理
 			{
 					tp = gpsx.posslnum;
 					if(tp > 0)
@@ -428,7 +459,7 @@ void GU620_GPSUPLOAD()
 			
 /********************************************GPS LBS 上报***************************************************/	
 #if 0
-			sprintf(GPS_sendbuf,"%s\r\n%s\r\n%s\r\n%s\r\n%s\r\n%s\r\n",PosslNUM,LON_BUF,LAT_BUF,LON_buf,LAT_buf,end);
+//			sprintf(GPS_sendbuf,"%s\r\n%s\r\n%s\r\n%s\r\n%s\r\n%s\r\n",PosslNUM,LON_BUF,LAT_BUF,LON_buf,LAT_buf,end);
 			rt_thread_delay(250);
 			rt_memset(GPS_cmd,0,sizeof(GPS_cmd));
 			rt_sprintf(GPS_cmd,"AT+CIPSEND=%d\r\n",rt_strlen(GPS_sendbuf));   //GPS_sendbuf为要发送数据的大小
@@ -539,7 +570,7 @@ void rt_thread_entry_GU620_Upload(void* parameter)
 				gps_onoff = 0;
 				num ++;
 		}	
-		rt_thread_delay(RT_TICK_PER_SECOND*5);  //上报间隔 1000ms
+		rt_thread_delay(500*2);  //上报间隔 5000ms
 	}
 }
 

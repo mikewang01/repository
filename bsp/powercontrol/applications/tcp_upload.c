@@ -14,7 +14,7 @@ extern char GPS_sendbuf[256];
 char sendbuf[256];
 extern void TCP_SENDOK(void);
 extern void TCP_CMD(void);
-int time = 5;
+int time = 10;
 
 //extern nmea_msg gpsx;
 //Èë¿Úº¯Êý
