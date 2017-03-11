@@ -154,6 +154,7 @@ extern int TCP_ReConnet(void)
 		u8 *p1;
 		u8 err;
 		gps_flag = 0;
+		tcp_up_flag = 0;
 		rt_pin_write(pLED,PIN_HIGH);
 		err = sendAtCmdWaitResp("AT+GPSUART=0\r",RT_TICK_PER_SECOND*5, "OK",10);     //串口1输出
 		if(err != GU620_OK)
@@ -169,7 +170,7 @@ extern int TCP_ReConnet(void)
 //				gps_flag = 0;
 //				return err;	
 //		}
-		err = sendAtCmdWaitResp("AT+CIPCLOSE=1\r",RT_TICK_PER_SECOND*5, "OK",30); //首先快速断开TCP链接
+		err = sendAtCmdWaitResp("AT+CIPCLOSE=1\r",RT_TICK_PER_SECOND*5, "OK",10); //首先快速断开TCP链接
 		if(err != GU620_OK)
 		{
 				GU620_ONOFF = 1;
@@ -180,7 +181,7 @@ extern int TCP_ReConnet(void)
 		p1 = (u8*)rt_strstr(IpPort,"AT+CIPSTART");
 		if(p1 != NULL)
 		{
-			err = sendAtCmdWaitResp(IpPort,RT_TICK_PER_SECOND*5, "CONNECT OK",30);            //重新建立链接TCP	
+			err = sendAtCmdWaitResp(IpPort,RT_TICK_PER_SECOND*5, "CONNECT OK",10);            //重新建立链接TCP	
 		if(err != GU620_OK)
 		{
 				GU620_ONOFF = 1;
@@ -192,7 +193,7 @@ extern int TCP_ReConnet(void)
 		else
 		{
 			rt_sprintf(IpPort,"AT+CIPSTART=\"TCP\",\"%s\",%d,2\r",rt_GU620_IP_t.ip,rt_GU620_IP_t.port);	
-			err = sendAtCmdWaitResp(IpPort,RT_TICK_PER_SECOND*5, "CONNECT OK",30);            //重新建立链接TCP
+			err = sendAtCmdWaitResp(IpPort,RT_TICK_PER_SECOND*5, "CONNECT OK",10);            //重新建立链接TCP
 			if(err != GU620_OK)
 			{
 					GU620_ONOFF = 1;
@@ -211,9 +212,10 @@ int IP_Process(char ip[20],unsigned short port)
 	unsigned short num = 0;
 	u8 err;
 	gps_flag = 0;
-	sendAtCmdWaitResp("AT+GPSUART=0\r",RT_TICK_PER_SECOND, "OK",10);     //
+	tcp_up_flag = 0;
 	rt_pin_write(pLED,PIN_HIGH);
-	sendAtCmdWaitResp("AT+GPSPWR=0\r",RT_TICK_PER_SECOND,"OK",5);    //GPS断电
+	sendAtCmdWaitResp("AT+GPSUART=0\r",RT_TICK_PER_SECOND, "OK",10);     //
+//	sendAtCmdWaitResp("AT+GPSPWR=0\r",RT_TICK_PER_SECOND,"OK",5);    //GPS断电
 	
 	rt_thread_delay(RT_TICK_PER_SECOND*5);//5s
 	rt_kprintf("config.....\r\n");
@@ -229,7 +231,7 @@ int IP_Process(char ip[20],unsigned short port)
 	rt_kprintf("Port : %d\r\n",rt_GU620_IP_t.port);
 	
 	
-	err = sendAtCmdWaitResp("AT+CIPCLOSE=1\r",RT_TICK_PER_SECOND*5, "OK",30); //首先快速断开TCP链接
+	err = sendAtCmdWaitResp("AT+CIPCLOSE=1\r",RT_TICK_PER_SECOND*5, "OK",10); //首先快速断开TCP链接
 	if(err != GU620_OK)
 	{
 			GU620_ONOFF = 1;
@@ -245,7 +247,7 @@ int IP_Process(char ip[20],unsigned short port)
 	rt_kprintf("IP_Port saved!\r\n");
 	/**************************************************************/
 	
-	err = sendAtCmdWaitResp(IpPort,RT_TICK_PER_SECOND*5, "CONNECT OK",50);            //重新建立链接TCP
+	err = sendAtCmdWaitResp(IpPort,RT_TICK_PER_SECOND*5, "CONNECT OK",10);            //重新建立链接TCP
 	if(err != GU620_OK)
 	{
 			GU620_ONOFF = 1;
@@ -254,6 +256,8 @@ int IP_Process(char ip[20],unsigned short port)
 	}
 	rt_kprintf("%s\r\n",IpPort);
 	gps_flag = 1;
+	tcp_up_flag = 1;
+	rt_pin_write(pLED,PIN_LOW);
 }
 
 
